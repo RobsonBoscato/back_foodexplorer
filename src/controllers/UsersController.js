@@ -46,7 +46,7 @@ class UsersController {
     const { id } = req.params
     const database = await sqliteConnection()
 
-    const user = database.get(`SELECT * FROM users WHERE id = (?)`, [id])
+    const user = await database.get(`SELECT * FROM users WHERE id = (?)`, [id])
 
     if (!user) {
       throw new AppError(`User ${name} does not exist`)
@@ -57,6 +57,8 @@ class UsersController {
       WHERE email = (?)`, [email]
     )
 
+    console.log(userUpdatedEmail.id);
+    console.log(user.id);
     if (userUpdatedEmail && userUpdatedEmail.id !== user.id) {
       throw new AppError('That email is already in use.')
     }
