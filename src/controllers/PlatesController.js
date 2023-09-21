@@ -1,4 +1,5 @@
 const knex = require('../database/knex')
+const AppError = require('../utils/AppError')
 
 class PlatesController {
   async create(req, res) {
@@ -21,9 +22,61 @@ class PlatesController {
 
     await knex("tags").insert(tagsInsert)
 
-    res.json()
+    res.json(`Sucessfully created a plate with id: ${plate_id}`)
   }
 
+  async show(req, res) {
+    const { id } = req.params
+
+    const plate = await knex("plates").where({ id }).first()
+
+    if (!plate) {
+      throw new AppError(`There is no plate with id: ${id}`)
+
+    }
+    const tags = await knex("tags").where({ plate_id: id }).orderBy('name')
+
+    return res.json({
+      ...plate,
+      tags
+    })
+  }
+
+  async delete(req, res) {
+    const { id } = req.params
+
+    const plateToDelete = await knex("plates").where({ id }).delete()
+    if (!plateToDelete) {
+      throw new AppError(`There is no plate with id: ${id}`)
+    }
+
+    res.json(`Sucessfully deleted the plate id: ${id}`)
+  }
+
+  async index(req, res) {
+    const { id, title, tags } = req.query
+
+    let plates
+
+    if (tags) {
+      const filterTags = tags.split(',').map(tag => tag.trim())
+
+      plates = await knex("tags")
+        .select([
+          "plates.id",
+          "plates.title",
+          "plates.user_id",
+        ])
+        .whereIn("name", filterTags)
+
+    } else {
+      plates = await knex("plates")
+        .where({ id })
+        .whereLike("description", `%${title}%`)
+    }
+
+    return res.json(plates)
+  }
 }
 
 module.exports = PlatesController
