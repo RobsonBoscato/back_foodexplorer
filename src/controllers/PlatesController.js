@@ -54,7 +54,7 @@ class PlatesController {
   }
 
   async index(req, res) {
-    const { id, title, tags } = req.query
+    const { user_id, title, tags } = req.query
 
     let plates
 
@@ -67,15 +67,28 @@ class PlatesController {
           "plates.title",
           "plates.user_id",
         ])
+        .where("plates.user_id", user_id)
         .whereIn("name", filterTags)
+        .innerJoin("plates", "plates.id", "tags.plate_id")
 
     } else {
       plates = await knex("plates")
-        .where({ id })
+        .where({ user_id })
         .whereLike("description", `%${title}%`)
+        .orderBy("id")
     }
 
-    return res.json(plates)
+    const userTags = await knex("tags").where({ user_id })
+    const platesWithTags = plates.map(plate => {
+      const plateTags = userTags.filter(tag => tag.plate_id === plate.id)
+
+      return {
+        ...plate,
+        tags: plateTags
+      }
+    })
+
+    return res.json(platesWithTags)
   }
 }
 
