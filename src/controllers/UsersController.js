@@ -43,38 +43,44 @@ class UsersController {
 
   async update(req, res) {
     const { name, email, password, old_password } = req.body
-    const { id } = req.params
+    const user_id = req.user.id
     const database = await sqliteConnection()
 
-    const user = await database.get(`SELECT * FROM users WHERE id = (?)`, [id])
+    const user = await database.get(`SELECT * FROM users WHERE id = (?)`, [user_id])
 
     if (!user) {
       throw new AppError(`User ${name} does not exist`)
     }
 
     const userUpdatedEmail = await database.get(
-      `SELECT * FROM users
-      WHERE email = (?)`, [email]
+      `SELECT * FROM users WHERE email = (?)`, [email]
     )
 
     if (userUpdatedEmail && userUpdatedEmail.id !== user.id) {
       throw new AppError('That email is already in use.')
     }
 
-    if (password && old_password) {
-      const checkPassword = await compare(old_password, user.password)
-      if (!checkPassword) {
-        throw new AppError('You should provide the old password.')
-      }
-      if (password.length < 6) {
-        throw new AppError('New password must have at least 6 characters')
-      }
-    }
-
-    user.password = await hash.email
     //Nullish operator when not provided the fields info
     user.name = name ?? user.name
     user.email = email ?? user.email
+
+    if (password.length < 6) {
+      throw new AppError('New password must have at least 6 characters')
+    }
+    if (password && !old_password) {
+      throw new AppError('You should provide the old password to change it.')
+    }
+
+    if (password && old_password) {
+      const checkPassword = await compare(old_password, user.password)
+      if (!checkPassword) {
+        throw new AppError('Old password incorrect.')
+      }
+    }
+
+    if (password) {
+      user.password = await hash(password, 8)
+    }
 
     await database.run(`
       UPDATE users SET
@@ -83,7 +89,7 @@ class UsersController {
       password = (?),
       updated_at = DATETIME('now')
       WHERE id = (?)`,
-      [user.name, user.email, user.password, id]
+      [user.name, user.email, user.password, user_id]
     )
 
     res.status(200).json(`User: ${user.name}, successfully updated.`)

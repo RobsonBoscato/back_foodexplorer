@@ -4,7 +4,7 @@ const AppError = require('../utils/AppError')
 class PlatesController {
   async create(req, res) {
     const { title, description, tags } = req.body
-    const { user_id } = req.params
+    const user_id = req.user.id
 
     const [plate_id] = await knex("plates").insert({
       title,
@@ -32,8 +32,8 @@ class PlatesController {
 
     if (!plate) {
       throw new AppError(`There is no plate with id: ${id}`)
-
     }
+
     const tags = await knex("tags").where({ plate_id: id }).orderBy('name')
 
     return res.json({
@@ -54,7 +54,9 @@ class PlatesController {
   }
 
   async index(req, res) {
-    const { user_id, title, tags } = req.query
+    const { title, tags } = req.query
+
+    const user_id = req.user.id
 
     let plates
 
@@ -87,9 +89,7 @@ class PlatesController {
         tags: plateTags
       }
     })
-
     return res.json(platesWithTags)
   }
 }
-
 module.exports = PlatesController
