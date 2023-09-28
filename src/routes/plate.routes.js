@@ -2,6 +2,7 @@ const { Router } = require("express")
 
 const PlatesController = require("../controllers/PlatesController")
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated")
+const ensureAuthorization = require("../middlewares/ensureAuthorization")
 
 const platesRoutes = Router()
 
@@ -10,9 +11,9 @@ const platesController = new PlatesController()
 platesRoutes.use(ensureAuthenticated)
 
 
-platesRoutes.post('/', platesController.create)
+platesRoutes.post('/', ensureAuthorization("admin"), platesController.create)
 platesRoutes.get('/:id', platesController.show)
 platesRoutes.get('/', platesController.index)
-platesRoutes.delete('/:id', platesController.delete)
+platesRoutes.delete('/:id', ensureAuthorization("admin"), platesController.delete)
 
 module.exports = platesRoutes
