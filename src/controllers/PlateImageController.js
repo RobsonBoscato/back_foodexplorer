@@ -1,31 +1,43 @@
-const knex = require('knex')
+// const knex = require('knex')
 const AppError = require('../utils/AppError')
 const DiskStorage = require('../providers/diskStorage')
+const sqliteConnection = require('../database/sqlite');
 
 class PlateImageController {
   async update(req, res) {
-    const plate_id = req.user.id
-    console.log(plate_id);
+    const plate_id = req.params.id
     const imageFileName = req.file.filename
+
     const diskStorage = new DiskStorage()
+    const database = await sqliteConnection()
 
-    const user = await knex('plates').where({ id: user_id })
-      .first()
+    const knex = require('knex');
+    const config = require('../../knexfile'); // Import your Knex configuration
 
-    if (!user) {
-      throw new AppError('Only authenticated users can upload images', 401)
+    const db = knex(config.development); // Use the 'development' configuration
+
+    const plate = await db.select('*').from('plates').where({ id: plate_id });
+
+    if (!plate) {
+      throw new AppError('there is no plate with the id specified', 401)
     }
 
-    if (user.image) {
-      await diskStorage.deleteFile(user.image)
+    if (plate.image) {
+      await diskStorage.deleteFile(plate.image)
     }
 
     const filename = await diskStorage.saveFile(imageFileName)
-    user.image = filename
+    plate.image = filename
 
-    await knex('plates').update(user).where({ id: user.id })
+    await database.run(`
+      UPDATE plates SET
+      image = (?),
+      updated_at = DATETIME('now')
+      WHERE id = (?)`,
+      [plate.image, plate_id]
+    )
 
-    return res.json(user)
+    return res.json(plate)
   }
 }
 

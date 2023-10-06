@@ -6,7 +6,7 @@ function ensureAuthorization(roleVerify) {
 
     if (role !== roleVerify) {
       console.log(roleVerify);
-      throw new AppError('Unauthorized', 401)
+      throw new AppError('Unauthorized, allowed for Admins only', 401)
     }
 
     return next()

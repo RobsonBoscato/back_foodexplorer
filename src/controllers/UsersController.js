@@ -5,11 +5,12 @@ const { hash, compare } = require('bcrypt');
 
 class UsersController {
   async create(req, res) {
-    const { name, email, password } = req.body
+    const { name, email, password, role, ...rest } = req.body
 
     if (!name || !email || !password) {
       throw new AppError('All the fields has to be fullfilled.')
     }
+
 
     if (password.length < 6) {
       throw new AppError('Password must have at least 6 characters')
@@ -33,10 +34,14 @@ class UsersController {
 
     const hashedPassword = await hash(password, 8)
 
+    if (!role) {
+      console.log(`Profile: ${role}`);
+    }
+
     await database.run(
-      `INSERT INTO users(name, email, password) 
-      VALUES(?, ?, ?)`,
-      [name, email, hashedPassword]
+      `INSERT INTO users(name, email, password, role) 
+      VALUES(?, ?, ?, ?)`,
+      [name, email, hashedPassword, role]
     )
     res.status(201).json("Sucessfully created user.")
   }
