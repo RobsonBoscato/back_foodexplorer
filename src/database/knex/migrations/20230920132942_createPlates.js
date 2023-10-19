@@ -1,6 +1,8 @@
 exports.up = knex => knex.schema.createTable('plates', table => {
   table.increments('id')
   table.text('title')
+  table.text('category')
+  table.float('price')
   table.text('description')
   table.binary('image').nullable()
   table.integer('user_id').references('id').inTable('users')

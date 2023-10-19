@@ -3,11 +3,13 @@ const AppError = require('../utils/AppError')
 
 class PlatesController {
   async create(req, res) {
-    const { title, description, tags } = req.body
+    const { title, description, tags, category, price } = req.body
     const user_id = req.user.id
 
     const [plate_id] = await knex("plates").insert({
       title,
+      category,
+      price,
       description,
       user_id
     })
@@ -28,17 +30,15 @@ class PlatesController {
   async show(req, res) {
     const { id } = req.params
 
-    const plate = await knex("plates").where({ id }).first()
+    const plate = await knex("plates")
 
     if (!plate) {
       throw new AppError(`There is no plate with id: ${id}`)
     }
 
-    const tags = await knex("tags").where({ plate_id: id }).orderBy('name')
 
     return res.json({
-      ...plate,
-      tags
+      ...plate
     })
   }
 
@@ -54,8 +54,10 @@ class PlatesController {
   }
 
   async index(req, res) {
-    const { title, tags } = req.query
+    const { title, tags, plate_id } = req.params
+    console.log('request', req.plate_id);
 
+    console.log('query', plate_id);
     const user_id = req.user.id
 
     let plates

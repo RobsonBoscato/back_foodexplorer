@@ -18,8 +18,9 @@ const plateImageController = new PlateImageController()
 platesRoutes.use(ensureAuthenticated)
 
 platesRoutes.post('/', ensureAuthorization("admin"), platesController.create)
+platesRoutes.get('/', platesController.show)
 platesRoutes.get('/:id', platesController.show)
-platesRoutes.get('/', platesController.index)
+platesRoutes.get('/tags/:id', platesController.index)
 platesRoutes.delete('/:id', ensureAuthorization("admin"), platesController.delete)
 platesRoutes.patch('/:id', ensureAuthorization("admin"), upload.single('image'), plateImageController.update)
 

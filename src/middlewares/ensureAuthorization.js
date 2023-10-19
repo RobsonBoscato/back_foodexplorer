@@ -5,7 +5,6 @@ function ensureAuthorization(roleVerify) {
     const { role } = req.user
 
     if (role !== roleVerify) {
-      console.log(roleVerify);
       throw new AppError('Unauthorized, allowed for Admins only', 401)
     }
 
