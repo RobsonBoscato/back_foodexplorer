@@ -1,17 +1,29 @@
 const knex = require('../database/knex')
 const AppError = require('../utils/AppError')
+const DiskStorage = require("../providers/diskStorage")
 
 class PlatesController {
   async create(req, res) {
-    const { title, description, tags, category, price } = req.body
+    const { title, description, category, price, tags } = req.body
     const user_id = req.user.id
 
+    console.log(req.body);
+    const plateFileName = req.file.filename
+    const diskStorage = new DiskStorage();
+
+    if (!plateFileName) {
+      throw new AppError('A imagem é um campo obrigatório!');
+    }
+
+    const filename = await diskStorage.save(plateFileName);
+
     const [plate_id] = await knex("plates").insert({
+      user_id,
       title,
       category,
       price,
-      description,
-      user_id
+      image: filename,
+      description
     })
 
     const tagsInsert = tags.map(name => {
@@ -29,16 +41,22 @@ class PlatesController {
 
   async show(req, res) {
     const { id } = req.params
+    const { title } = req.query
 
-    const plate = await knex("plates")
+    let plates;
+    if (id) {
+      plates = await knex("plates").where("id", id)
 
-    if (!plate) {
-      throw new AppError(`There is no plate with id: ${id}`)
+    }
+    else if (title) {
+      plates = await knex("plates").whereLike("title", `%${title}%`)
+
+    } else {
+      plates = await knex("plates")
     }
 
-
     return res.json({
-      ...plate
+      ...plates
     })
   }
 

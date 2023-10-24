@@ -17,7 +17,7 @@ const platesController = new PlatesController()
 const plateImageController = new PlateImageController()
 platesRoutes.use(ensureAuthenticated)
 
-platesRoutes.post('/', ensureAuthorization("admin"), platesController.create)
+platesRoutes.post('/', upload.single('image'), platesController.create)
 platesRoutes.get('/', platesController.show)
 platesRoutes.get('/:id', platesController.show)
 platesRoutes.get('/tags/:id', platesController.index)

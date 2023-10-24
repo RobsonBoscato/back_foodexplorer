@@ -12,9 +12,9 @@ class PlateImageController {
     const database = await sqliteConnection()
 
     const knex = require('knex');
-    const config = require('../../knexfile'); // Import your Knex configuration
+    const config = require('../../knexfile');
 
-    const db = knex(config.development); // Use the 'development' configuration
+    const db = knex(config.development)
 
     const plate = await db.select('*').from('plates').where({ id: plate_id });
 
@@ -26,7 +26,7 @@ class PlateImageController {
       await diskStorage.deleteFile(plate.image)
     }
 
-    const filename = await diskStorage.saveFile(imageFileName)
+    const filename = await diskStorage.save(imageFileName)
     plate.image = filename
 
     await database.run(`

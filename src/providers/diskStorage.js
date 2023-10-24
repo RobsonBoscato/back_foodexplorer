@@ -3,12 +3,14 @@ const path = require('path');
 const uploadConfig = require('../configs/upload')
 
 class DiskStorage {
-  async saveFile(file) {
+  async save(file) {
     await fs.promises.rename(
       path.resolve(uploadConfig.TMP_FOLDER, file),
       path.resolve(uploadConfig.UPLOADS_FOLDER, file)
     )
-    return file
+
+    console.log('entered diskStorage', file);
+    return file;
   }
 
   async delete(file) {
@@ -23,4 +25,5 @@ class DiskStorage {
     await fs.promises.unlink(filePath)
   }
 }
+
 module.exports = DiskStorage 
