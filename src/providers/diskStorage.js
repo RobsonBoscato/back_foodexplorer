@@ -9,7 +9,6 @@ class DiskStorage {
       path.resolve(uploadConfig.UPLOADS_FOLDER, file)
     )
 
-    console.log('entered diskStorage', file);
     return file;
   }
 

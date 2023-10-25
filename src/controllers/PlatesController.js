@@ -73,9 +73,6 @@ class PlatesController {
 
   async index(req, res) {
     const { title, tags, plate_id } = req.params
-    console.log('request', req.plate_id);
-
-    console.log('query', plate_id);
     const user_id = req.user.id
 
     let plates
