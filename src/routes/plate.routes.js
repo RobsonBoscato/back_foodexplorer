@@ -23,5 +23,6 @@ platesRoutes.get('/:id', platesController.show)
 platesRoutes.get('/tags/:id', platesController.index)
 platesRoutes.delete('/:id', ensureAuthorization("admin"), platesController.delete)
 platesRoutes.patch('/:id', ensureAuthorization("admin"), upload.single('image'), plateImageController.update)
+platesRoutes.patch('/editplate/:id', ensureAuthorization("admin"), plateImageController.update)
 
 module.exports = platesRoutes
