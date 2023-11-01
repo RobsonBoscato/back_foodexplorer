@@ -108,5 +108,56 @@ class PlatesController {
     })
     return res.json(platesWithTags)
   }
+
+  async update(req, res) {
+
+    const { id } = req.params;
+    const { name, price, description, category, ingredients } = req.body;
+    const dishTags = JSON.parse(ingredients);
+
+    const dish = await knex('plates').where({ id }).first();
+    if (!dish) {
+      throw new AppError('Could not find the dish');
+    }
+
+    if (req.file) {
+      const dishFilename = req.file.filename;
+      const diskStorage = new DiskStorage();
+
+      if (dishFilename) {
+        await diskStorage.delete(dish.image);
+        const filename = await diskStorage.save(dishFilename);
+        dish.image = filename;
+      }
+    }
+
+    dish.name = name ?? dish.name;
+    dish.price = price ?? dish.price;
+    dish.description = description ?? dish.description;
+    dish.image, (dish.category = category ?? dish.category);
+
+    await knex('plates').where({ id }).update({
+      name: dish.name,
+      price: dish.price,
+      description: dish.description,
+      image: dish.image,
+      category: dish.category,
+      updated_at: knex.fn.now(),
+    });
+
+    const tagsInsert = dishTags.map((tag) => {
+      return {
+        plates_id: id,
+        title: tag,
+      };
+    });
+
+    await knex('tags').where('plates_id', id).delete();
+
+    await knex('tags').insert(tagsInsert);
+
+    return res.json('Update sucessfully completed.');
+  }
 }
+
 module.exports = PlatesController
