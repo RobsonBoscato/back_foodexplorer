@@ -7,12 +7,11 @@ class PlatesController {
     const { title, description, category, price, tags } = req.body
     const user_id = req.user.id
 
-    console.log(req.body);
     const plateFileName = req.file.filename
     const diskStorage = new DiskStorage();
 
     if (!plateFileName) {
-      throw new AppError('A imagem é um campo obrigatório!');
+      throw new AppError('Image is a required file');
     }
 
     const filename = await diskStorage.save(plateFileName);
@@ -112,8 +111,10 @@ class PlatesController {
   async update(req, res) {
 
     const { id } = req.params;
-    const { name, price, description, category, ingredients } = req.body;
-    const dishTags = JSON.parse(ingredients);
+    const { title, price, description, category, tags } = req.body;
+    const user_id = req.user.id
+
+    const plateTags = JSON.parse(tags);
 
     const dish = await knex('plates').where({ id }).first();
     if (!dish) {
@@ -125,19 +126,19 @@ class PlatesController {
       const diskStorage = new DiskStorage();
 
       if (dishFilename) {
-        await diskStorage.delete(dish.image);
+        await diskStorage.delete(dish ? dish.image : null);
         const filename = await diskStorage.save(dishFilename);
         dish.image = filename;
       }
     }
 
-    dish.name = name ?? dish.name;
+    dish.title = title ?? dish.title;
     dish.price = price ?? dish.price;
     dish.description = description ?? dish.description;
     dish.image, (dish.category = category ?? dish.category);
 
     await knex('plates').where({ id }).update({
-      name: dish.name,
+      title: dish.title,
       price: dish.price,
       description: dish.description,
       image: dish.image,
@@ -145,14 +146,18 @@ class PlatesController {
       updated_at: knex.fn.now(),
     });
 
-    const tagsInsert = dishTags.map((tag) => {
+    console.log(plateTags);
+    const tagsInsert = plateTags.map((tag) => {
+      console.log('tag', tag);
       return {
-        plates_id: id,
-        title: tag,
-      };
-    });
+        plate_id: id,
+        name: tag.name ?? tag,
+        user_id: user_id
+      }
+    })
+    console.log(tagsInsert);
 
-    await knex('tags').where('plates_id', id).delete();
+    await knex('tags').where('plate_id', id).delete();
 
     await knex('tags').insert(tagsInsert);
 
