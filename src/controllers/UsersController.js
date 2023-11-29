@@ -34,10 +34,6 @@ class UsersController {
 
     const hashedPassword = await hash(password, 8)
 
-    // if (!role) {
-    //   console.log(`Profile: ${role}`);
-    // }
-
     await database.run(
       `INSERT INTO users(name, email, password) 
       VALUES(?, ?, ?)`,

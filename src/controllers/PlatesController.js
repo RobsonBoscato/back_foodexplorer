@@ -146,16 +146,13 @@ class PlatesController {
       updated_at: knex.fn.now(),
     });
 
-    console.log(plateTags);
     const tagsInsert = plateTags.map((tag) => {
-      console.log('tag', tag);
       return {
         plate_id: id,
         name: tag.name ?? tag,
         user_id: user_id
       }
     })
-    console.log(tagsInsert);
 
     await knex('tags').where('plate_id', id).delete();
 
