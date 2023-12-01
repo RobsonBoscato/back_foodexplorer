@@ -21,7 +21,6 @@ class DiskStorage {
       } catch {
         return
       }
-      
       await fs.promises.unlink(filePath)
     }
   }
